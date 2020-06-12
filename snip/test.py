@@ -7,9 +7,9 @@ from helpers import cache_json
 
 def test(args, model, sess, dataset):
     print('|========= START TEST =========|')
-    saver = tf.train.Saver(max_to_keep=10)
+    saver = tf.compat.v1.train.Saver(max_to_keep=10)
     # Identify which checkpoints are available.
-    state = tf.train.get_checkpoint_state(args.path_model)
+    state = tf.compat.v1.train.get_checkpoint_state(args.path_model)
     model_files = {int(s[s.index('itr')+4:]): s for s in state.all_model_checkpoint_paths}
     itrs = sorted(model_files.keys())
     # Subset of iterations.

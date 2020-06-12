@@ -2,6 +2,9 @@ import os
 import sys
 import argparse
 import tensorflow as tf
+import numpy as np
+import scipy.stats as st
+import matplotlib.pyplot as plt
 
 from dataset import Dataset
 from model import Model
@@ -44,31 +47,67 @@ def parse_arguments():
     return args
 
 
+def plot_distribution(sess, layers, pruned=False):
+    for idx, var in enumerate(layers):
+        if pruned == False:
+            layer = np.array(sess.run(var)).flatten()
+        else:
+            layer = var.flatten()[var.flatten() != 0]
+        ax = plt.axes()
+        ax.set_axisbelow(True)
+        plt.hist(layer, bins=30, label="Weights", density=True, edgecolor='white')
+        plt.grid(ls='--')
+        left, right = plt.xlim()
+        kde_xs = np.linspace(left, right)
+        kde = st.gaussian_kde(layer)
+        plt.plot(kde_xs, kde.pdf(kde_xs), label="PDF")
+        plt.legend(loc="upper left")
+        plt.ylabel('Density')
+        plt.xlabel('Weights')      
+        if pruned == False:  
+            plt.title("Histogram of Weights for layer{} before Pruning".format(idx+1))
+            plt.savefig('layer{} before pruning.png'.format(idx+1))    
+        else:
+            plt.title("Histogram of Weights for layer{} after Pruning".format(idx+1))
+            plt.savefig('layer{} after pruning.png'.format(idx+1))        
+        plt.close()
+
+
 def main():
     args = parse_arguments()
 
     # Dataset
     dataset = Dataset(**vars(args))
 
+    # Tensorflow 2.0 by default uses Eager-Execution, hence Placeholders are not getting executed
+    tf.compat.v1.disable_eager_execution()
+
     # Reset the default graph and set a graph-level seed
-    tf.reset_default_graph()
-    tf.set_random_seed(9)
+    tf.compat.v1.reset_default_graph()
+    tf.compat.v1.set_random_seed(9)
 
     # Model
     model = Model(num_classes=dataset.num_classes, **vars(args))
     model.construct_model()
 
     # Session
-    sess = tf.InteractiveSession()
-    tf.global_variables_initializer().run()
-    tf.local_variables_initializer().run()
+    sess = tf.compat.v1.InteractiveSession()
+    tf.compat.v1.global_variables_initializer().run()
+    tf.compat.v1.local_variables_initializer().run()
 
+    # Plot the weight distribution of each layer
+    layers = [v for v in tf.compat.v1.trainable_variables() if v.name in ['ap/w1:0', 'ap/w2:0', 'ap/w3:0', 'ap/w4:0']]
+    plot_distribution(sess, layers, False)
     # Prune
-    prune.prune(args, model, sess, dataset)
+    pruned_weights = prune.prune(args, model, sess, dataset)
+
+    # Plot the weight distribution of each layer
+    pruned_layers = [pruned_weights[k] for k in ['w1', 'w2', 'w3', 'w4']]
+    plot_distribution(sess, pruned_layers, True)
 
     # Train and test
-    train.train(args, model, sess, dataset)
-    test.test(args, model, sess, dataset)
+    # train.train(args, model, sess, dataset)
+    # test.test(args, model, sess, dataset)
 
     sess.close()
     sys.exit()

@@ -44,11 +44,11 @@ class Model(object):
 
         # Input nodes
         self.inputs = net.inputs
-        self.compress = tf.placeholder_with_default(False, [])
-        self.is_train = tf.placeholder_with_default(False, [])
-        self.pruned = tf.placeholder_with_default(False, [])
+        self.compress = tf.compat.v1.placeholder_with_default(False, [])
+        self.is_train = tf.compat.v1.placeholder_with_default(False, [])
+        self.pruned = tf.compat.v1.placeholder_with_default(False, [])
 
-        # Switch for weights to use (before or after pruning)
+        # Switch for n to use (before or after pruning)
         weights = tf.cond(self.pruned, lambda: net.weights_ap, lambda: net.weights_bp)
 
         # For convenience
@@ -70,7 +70,7 @@ class Model(object):
             return create_sparse_mask(cs, self.target_sparsity)
 
         mask = tf.cond(self.compress, lambda: get_sparse_mask(), lambda: mask_prev)
-        with tf.control_dependencies([tf.assign(mask_prev[k], v) for k,v in mask.items()]):
+        with tf.control_dependencies([tf.compat.v1.assign(mask_prev[k], v) for k,v in mask.items()]):
             w_final = apply_mask(weights, mask)
 
         # Forward pass
@@ -84,7 +84,7 @@ class Model(object):
         # Optimization
         optim, lr, global_step = prepare_optimization(opt_loss, self.optimizer, self.lr_decay_type,
             self.lr, self.decay_boundaries, self.decay_values)
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS) # TF version issue
+        update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS) # TF version issue
         with tf.control_dependencies(update_ops):
             self.train_op = optim.minimize(opt_loss, global_step=global_step)
 
@@ -100,12 +100,16 @@ class Model(object):
             'acc_individual': output_accuracy_individual,
         }
         self.sparsity = compute_sparsity(w_final, prn_keys)
+        self.weights = w_final
 
         # Summaries
-        tf.summary.scalar('loss', opt_loss)
-        tf.summary.scalar('accuracy', output_accuracy)
-        tf.summary.scalar('lr', lr)
-        self.summ_op = tf.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES))
+        tf.compat.v1.summary.scalar('loss', opt_loss)
+        tf.compat.v1.summary.scalar('accuracy', output_accuracy)
+        tf.compat.v1.summary.scalar('lr', lr)
+        self.summ_op = tf.compat.v1.summary.merge(tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.SUMMARIES))
+
+    def get_weights(self):
+        return self.weights
 
 def compute_loss(labels, logits):
     assert len(labels.shape)+1 == len(logits.shape)
@@ -115,9 +119,9 @@ def compute_loss(labels, logits):
 
 def get_optimizer(optimizer, lr):
     if optimizer == 'sgd':
-        optimizer = tf.train.GradientDescentOptimizer(lr)
+        optimizer = tf.compat.v1.train.GradientDescentOptimizer(lr)
     elif optimizer == 'momentum':
-        optimizer = tf.train.MomentumOptimizer(lr, 0.9)
+        optimizer = tf.compat.v1.train.MomentumOptimizer(lr, 0.9)
     else:
         raise NotImplementedError
     return optimizer
@@ -174,7 +178,7 @@ def create_sparse_mask(mask, target_sparsity):
         num_params = vec.shape.as_list()[0]
         kappa = int(round(num_params * (1. - target_sparsity)))
         topk, ind = tf.nn.top_k(vec, k=kappa, sorted=True)
-        mask_sparse_v = tf.sparse_to_dense(ind, tf.shape(vec),
+        mask_sparse_v = tf.compat.v1.sparse_to_dense(ind, tf.shape(vec),
             tf.ones_like(ind, dtype=tf.float32), validate_indices=False)
         return mask_sparse_v
     if isinstance(mask, dict):

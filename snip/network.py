@@ -35,9 +35,9 @@ def load_network(
 
 def get_initializer(initializer, dtype):
     if initializer == 'zeros':
-        return tf.zeros_initializer(dtype=dtype)
+        return tf.zeros_initializer()
     elif initializer == 'vs':
-        return tf.variance_scaling_initializer(dtype=dtype)
+        return tf.compat.v1.variance_scaling_initializer(dtype=dtype)
     else:
         raise NotImplementedError
 
@@ -58,8 +58,8 @@ class LeNet300(object):
 
     def construct_inputs(self):
         return {
-            'input': tf.placeholder(tf.float32, [None] + self.input_dims),
-            'label': tf.placeholder(tf.int32, [None]),
+            'input': tf.compat.v1.placeholder(tf.float32, [None] + self.input_dims),
+            'label': tf.compat.v1.placeholder(tf.int32, [None]),
         }
 
     def construct_weights(self, initializer_w, initializer_b, trainable, scope):
@@ -68,13 +68,13 @@ class LeNet300(object):
             'initializer': get_initializer(initializer_w, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         b_params = {
             'initializer': get_initializer(initializer_b, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         weights = {}
         with tf.variable_scope(scope):
@@ -112,8 +112,8 @@ class LeNet5(object):
 
     def construct_inputs(self):
         return {
-            'input': tf.placeholder(tf.float32, [None] + self.input_dims),
-            'label': tf.placeholder(tf.int32, [None]),
+            'input': tf.compat.v1.placeholder(tf.float32, [None] + self.input_dims),
+            'label': tf.compat.v1.placeholder(tf.int32, [None]),
         }
 
     def construct_weights(self, initializer_w, initializer_b, trainable, scope):
@@ -122,24 +122,24 @@ class LeNet5(object):
             'initializer': get_initializer(initializer_w, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         b_params = {
             'initializer': get_initializer(initializer_b, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         weights = {}
-        with tf.variable_scope(scope):
-            weights['w1'] = tf.get_variable('w1', [5, 5, 1, 20], **w_params)
-            weights['w2'] = tf.get_variable('w2', [5, 5, 20, 50], **w_params)
-            weights['w3'] = tf.get_variable('w3', [800, 500], **w_params)
-            weights['w4'] = tf.get_variable('w4', [500, 10], **w_params)
-            weights['b1'] = tf.get_variable('b1', [20], **b_params)
-            weights['b2'] = tf.get_variable('b2', [50], **b_params)
-            weights['b3'] = tf.get_variable('b3', [500], **b_params)
-            weights['b4'] = tf.get_variable('b4', [10], **b_params)
+        with tf.compat.v1.variable_scope(scope):
+            weights['w1'] = tf.compat.v1.get_variable('w1', [5, 5, 1, 20], **w_params)
+            weights['w2'] = tf.compat.v1.get_variable('w2', [5, 5, 20, 50], **w_params)
+            weights['w3'] = tf.compat.v1.get_variable('w3', [800, 500], **w_params)
+            weights['w4'] = tf.compat.v1.get_variable('w4', [500, 10], **w_params)
+            weights['b1'] = tf.compat.v1.get_variable('b1', [20], **b_params)
+            weights['b2'] = tf.compat.v1.get_variable('b2', [50], **b_params)
+            weights['b3'] = tf.compat.v1.get_variable('b3', [500], **b_params)
+            weights['b4'] = tf.compat.v1.get_variable('b4', [10], **b_params)
         return weights
 
     def forward_pass(self, weights, inputs, is_train, trainable=True):
@@ -185,8 +185,8 @@ class AlexNet(object):
 
     def construct_inputs(self):
         return {
-            'input': tf.placeholder(tf.float32, [None] + self.input_dims),
-            'label': tf.placeholder(tf.int32, [None]),
+            'input': tf.compat.v1.placeholder(tf.float32, [None] + self.input_dims),
+            'label': tf.compat.v1.placeholder(tf.int32, [None]),
         }
 
     def construct_weights(self, initializer_w, initializer_b, trainable, scope):
@@ -195,13 +195,13 @@ class AlexNet(object):
             'initializer': get_initializer(initializer_w, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         b_params = {
             'initializer': get_initializer(initializer_b, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         k = self.k
         weights = {}
@@ -306,8 +306,8 @@ class VGG(object):
 
     def construct_inputs(self):
         return {
-            'input': tf.placeholder(tf.float32, [None] + self.input_dims),
-            'label': tf.placeholder(tf.int32, [None]),
+            'input': tf.compat.v1.placeholder(tf.float32, [None] + self.input_dims),
+            'label': tf.compat.v1.placeholder(tf.int32, [None]),
         }
 
     def construct_weights(self, initializer_w, initializer_b, trainable, scope):
@@ -316,13 +316,13 @@ class VGG(object):
             'initializer': get_initializer(initializer_w, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         b_params = {
             'initializer': get_initializer(initializer_b, dtype),
             'dtype': dtype,
             'trainable': trainable,
-            'collections': [self.name, tf.GraphKeys.GLOBAL_VARIABLES],
+            'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         weights = {}
         with tf.variable_scope(scope):
