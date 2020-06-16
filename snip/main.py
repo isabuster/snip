@@ -27,7 +27,7 @@ def parse_arguments():
     parser.add_argument('--train_iterations', type=int, default=10000, help='number of training iterations')
     parser.add_argument('--optimizer', type=str, default='sgd', help='optimizer of choice')
     parser.add_argument('--lr_decay_type', type=str, default='constant', help='learning rate decay type')
-    parser.add_argument('--lr', type=float, default=1e-1, help='initial learning rate')
+    parser.add_argument('--lr', type=float, default=1e-2, help='initial learning rate')
     parser.add_argument('--decay_boundaries', nargs='+', type=int, default=[], help='boundaries for piecewise_constant decay')
     parser.add_argument('--decay_values', nargs='+', type=float, default=[], help='values for piecewise_constant decay')
     # Initialization
@@ -95,20 +95,14 @@ def main():
     tf.compat.v1.global_variables_initializer().run()
     tf.compat.v1.local_variables_initializer().run()
 
-    # Plot the weight distribution of each layer
-    layers = [v for v in tf.compat.v1.trainable_variables() if v.name in ['ap/w1:0', 'ap/w2:0', 'ap/w3:0', 'ap/w4:0']]
-    plot_distribution(sess, layers, False)
     # Prune
-    pruned_weights = prune.prune(args, model, sess, dataset)
-
-    # Plot the weight distribution of each layer
-    pruned_layers = [pruned_weights[k] for k in ['w1', 'w2', 'w3', 'w4']]
-    plot_distribution(sess, pruned_layers, True)
+    weights_ap, sparsity_fraction = prune.prune(args, model, sess, dataset)
+    kappa = {k: int(round(weights_ap[k].size * (1. - sparsity_fraction[k]))) for k in weights_ap.keys()}
 
     # Train and test
-    # train.train(args, model, sess, dataset)
-    # test.test(args, model, sess, dataset)
-
+    train.train(args, model, sess, dataset)
+    test.test(args, model, sess, dataset)
+    
     sess.close()
     sys.exit()
 

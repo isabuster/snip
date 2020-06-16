@@ -44,15 +44,19 @@ class Model(object):
 
         # Input nodes
         self.inputs = net.inputs
+        # Compress based on snip
         self.compress = tf.compat.v1.placeholder_with_default(False, [])
         self.is_train = tf.compat.v1.placeholder_with_default(False, [])
         self.pruned = tf.compat.v1.placeholder_with_default(False, [])
+        # Compress based on the magnitude of weights for each layer
+        self.new_compress = tf.compat.v1.placeholder_with_default(False, [])
 
         # Switch for n to use (before or after pruning)
         weights = tf.cond(self.pruned, lambda: net.weights_ap, lambda: net.weights_bp)
 
         # For convenience
         prn_keys = [k for p in ['w', 'b'] for k in weights.keys() if p in k]
+        self.kappa = {k: tf.compat.v1.placeholder(tf.int32, [None]) for k in prn_keys}
         var_no_train = functools.partial(tf.Variable, trainable=False, dtype=tf.float32)
 
         # Model
@@ -69,9 +73,18 @@ class Model(object):
             cs = normalize_dict({k: tf.abs(v) for k, v in gradients.items()})
             return create_sparse_mask(cs, self.target_sparsity)
 
+        def get_new_sparse_mask():
+            pass
+
         mask = tf.cond(self.compress, lambda: get_sparse_mask(), lambda: mask_prev)
+        self.sparsity_fraction = {k: tf.nn.zero_fraction(v) for k,v in mask.items()}
+        mask = mask_prev
+
         with tf.control_dependencies([tf.compat.v1.assign(mask_prev[k], v) for k,v in mask.items()]):
             w_final = apply_mask(weights, mask)
+
+        self.weights_ap = w_final
+        self.weights = tf.compat.v1.trainable_variables()
 
         # Forward pass
         logits = net.forward_pass(w_final, self.inputs['input'], self.is_train)
@@ -100,7 +113,6 @@ class Model(object):
             'acc_individual': output_accuracy_individual,
         }
         self.sparsity = compute_sparsity(w_final, prn_keys)
-        self.weights = w_final
 
         # Summaries
         tf.compat.v1.summary.scalar('loss', opt_loss)
@@ -108,8 +120,6 @@ class Model(object):
         tf.compat.v1.summary.scalar('lr', lr)
         self.summ_op = tf.compat.v1.summary.merge(tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.SUMMARIES))
 
-    def get_weights(self):
-        return self.weights
 
 def compute_loss(labels, logits):
     assert len(labels.shape)+1 == len(logits.shape)
