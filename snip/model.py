@@ -77,7 +77,8 @@ class Model(object):
         mask = mask_prev
 
         self.weights = tf.compat.v1.trainable_variables()
-        self.kappa = {k: tf.compat.v1.placeholder(tf.int32, [])}
+        self.kappa = {k: tf.compat.v1.placeholder(tf.int32, []) for k in prn_keys}
+        self.num_weights = {k: tf.constant(weights[k].shape.num_elements()) for k in prn_keys}
 
         def get_new_sparse_mask():
             pass
