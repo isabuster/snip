@@ -8,6 +8,6 @@ def prune(args, model, sess, dataset):
     feed_dict = {}
     feed_dict.update({model.inputs[key]: batch[key] for key in ['input', 'label']})
     feed_dict.update({model.compress: True, model.is_train: False, model.pruned: False})
-    result = sess.run([model.outputs, model.sparsity, model.weights_ap, model.sparsity_fraction], feed_dict)
+    result = sess.run([model.outputs, model.sparsity, model.sparsity_fraction], feed_dict)
     print('Pruning: {:.3f} global sparsity (t:{:.1f})'.format(result[1], time.time() - t_start))
-    return result[-2], result[-1]
+    return result[-1]

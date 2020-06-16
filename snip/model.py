@@ -56,7 +56,6 @@ class Model(object):
 
         # For convenience
         prn_keys = [k for p in ['w', 'b'] for k in weights.keys() if p in k]
-        self.kappa = {k: tf.compat.v1.placeholder(tf.int32, [None]) for k in prn_keys}
         var_no_train = functools.partial(tf.Variable, trainable=False, dtype=tf.float32)
 
         # Model
@@ -73,18 +72,20 @@ class Model(object):
             cs = normalize_dict({k: tf.abs(v) for k, v in gradients.items()})
             return create_sparse_mask(cs, self.target_sparsity)
 
-        def get_new_sparse_mask():
-            pass
-
         mask = tf.cond(self.compress, lambda: get_sparse_mask(), lambda: mask_prev)
         self.sparsity_fraction = {k: tf.nn.zero_fraction(v) for k,v in mask.items()}
         mask = mask_prev
+
+        self.weights = tf.compat.v1.trainable_variables()
+        self.kappa = {k: tf.cast(tf.round(weights[k].shape.num_elements() * (1. - self.sparsity_fraction[k])), tf.int32) for k in weights}
+
+        def get_new_sparse_mask():
+            pass
 
         with tf.control_dependencies([tf.compat.v1.assign(mask_prev[k], v) for k,v in mask.items()]):
             w_final = apply_mask(weights, mask)
 
         self.weights_ap = w_final
-        self.weights = tf.compat.v1.trainable_variables()
 
         # Forward pass
         logits = net.forward_pass(w_final, self.inputs['input'], self.is_train)

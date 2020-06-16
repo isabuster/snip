@@ -63,13 +63,13 @@ def plot_distribution(sess, layers, pruned=False):
         plt.plot(kde_xs, kde.pdf(kde_xs), label="PDF")
         plt.legend(loc="upper left")
         plt.ylabel('Density')
-        plt.xlabel('Weights')      
-        if pruned == False:  
+        plt.xlabel('Weights')
+        if pruned == False:
             plt.title("Histogram of Weights for layer{} before Pruning".format(idx+1))
-            plt.savefig('layer{} before pruning.png'.format(idx+1))    
+            plt.savefig('layer{} before pruning.png'.format(idx+1))
         else:
             plt.title("Histogram of Weights for layer{} after Pruning".format(idx+1))
-            plt.savefig('layer{} after pruning.png'.format(idx+1))        
+            plt.savefig('layer{} after pruning.png'.format(idx+1))
         plt.close()
 
 
@@ -96,13 +96,12 @@ def main():
     tf.compat.v1.local_variables_initializer().run()
 
     # Prune
-    weights_ap, sparsity_fraction = prune.prune(args, model, sess, dataset)
-    kappa = {k: int(round(weights_ap[k].size * (1. - sparsity_fraction[k]))) for k in weights_ap.keys()}
+    sparsity_fraction = prune.prune(args, model, sess, dataset)
 
     # Train and test
     train.train(args, model, sess, dataset)
     test.test(args, model, sess, dataset)
-    
+
     sess.close()
     sys.exit()
 
