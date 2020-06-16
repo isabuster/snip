@@ -96,11 +96,12 @@ def main():
     tf.compat.v1.local_variables_initializer().run()
 
     # Prune
-    sparsity_fraction = prune.prune(args, model, sess, dataset)
+    weights_ap, sparsity_fraction = prune.prune(args, model, sess, dataset)
+    kappa = {k: int(round(weights_ap[k].size * (1. - sparsity_fraction[k]))) for k in weights_ap}
 
     # Train and test
-    train.train(args, model, sess, dataset)
-    test.test(args, model, sess, dataset)
+    # train.train(args, model, sess, dataset)
+    # test.test(args, model, sess, dataset)
 
     sess.close()
     sys.exit()

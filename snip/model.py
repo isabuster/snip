@@ -77,7 +77,7 @@ class Model(object):
         mask = mask_prev
 
         self.weights = tf.compat.v1.trainable_variables()
-        self.kappa = {k: tf.cast(tf.round(weights[k].shape.num_elements() * (1. - self.sparsity_fraction[k])), tf.int32) for k in weights}
+        self.kappa = {k: tf.compat.v1.placeholder(tf.int32, [])}
 
         def get_new_sparse_mask():
             pass
