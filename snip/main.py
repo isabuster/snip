@@ -95,12 +95,21 @@ def main():
     tf.compat.v1.global_variables_initializer().run()
     tf.compat.v1.local_variables_initializer().run()
 
-    # Prune
-    num_weights, sparsity_fraction = prune.prune(args, model, sess, dataset)
+    # Calculate sparsity per layer using SNIP but not prune
+    num_weights, sparsity_fraction = prune.prune_snip(args, model, sess, dataset)
     kappa = {k: int(round(num_weights[k] * (1. - sparsity_fraction[k]))) for k in num_weights}
 
-    # Train and test
+    # Train and test the dense network
     train.train(args, model, sess, dataset)
+    print('|========= FINISH TRAINING DENSE NETWORK =========|')
+    test.test(args, model, sess, dataset)
+
+    # Prune each layer based on the magnitude of the weights according to sparsity per layer
+    prune.prune_magnitude(args, model, sess, dataset, kappa)
+
+    # Train and test with the sparse network
+    train.train(args, model, sess, dataset)
+    print('|========= FINISH TRAINING SPARSE NETWORK =========|')
     test.test(args, model, sess, dataset)
 
     sess.close()

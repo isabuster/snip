@@ -57,6 +57,8 @@ class Model(object):
         # For convenience
         prn_keys = [k for p in ['w', 'b'] for k in weights.keys() if p in k]
         var_no_train = functools.partial(tf.Variable, trainable=False, dtype=tf.float32)
+        self.num_weights = {k: tf.constant(weights[k].shape.num_elements()) for k in prn_keys}
+        self.kappa = {k: tf.compat.v1.placeholder_with_default(self.num_weights[k], []) for k in prn_keys}
 
         # Model
         mask_init = {k: var_no_train(tf.ones(weights[k].shape)) for k in prn_keys}
@@ -74,20 +76,26 @@ class Model(object):
 
         mask = tf.cond(self.compress, lambda: get_sparse_mask(), lambda: mask_prev)
         self.sparsity_fraction = {k: tf.nn.zero_fraction(v) for k,v in mask.items()}
-        mask = mask_prev
-
-        self.weights = tf.compat.v1.trainable_variables()
-        self.kappa = {k: tf.compat.v1.placeholder(tf.int32, []) for k in prn_keys}
-        self.num_weights = {k: tf.constant(weights[k].shape.num_elements()) for k in prn_keys}
 
         def get_new_sparse_mask():
-            pass
+            def create_new_sparse_mask(weights, kappa):
+                weights_abs_v = {k: tf.reshape(tf.abs(v), [-1]) for k, v in weights.items()}
+                mask_sparse = {}
+                for k in weights:
+                    topk, ind = tf.nn.top_k(weights_abs_v[k], k=kappa[k], sorted=True)
+                    mask_sparse_v = tf.compat.v1.sparse_to_dense(ind, tf.shape(weights_abs_v[k]),
+                        tf.ones_like(ind, dtype=tf.float32), validate_indices=False)
+                    mask_sparse[k] = tf.reshape(mask_sparse_v, weights[k].shape)
+                return mask_sparse
+            return create_new_sparse_mask(weights, self.kappa)
+
+        mask = tf.cond(self.new_compress, lambda: get_new_sparse_mask(), lambda: mask_prev)
 
         with tf.control_dependencies([tf.compat.v1.assign(mask_prev[k], v) for k,v in mask.items()]):
+            self.mask = mask
             w_final = apply_mask(weights, mask)
 
-        self.weights_ap = w_final
-
+        self.w_final = w_final
         # Forward pass
         logits = net.forward_pass(w_final, self.inputs['input'], self.is_train)
 
@@ -115,6 +123,7 @@ class Model(object):
             'acc_individual': output_accuracy_individual,
         }
         self.sparsity = compute_sparsity(w_final, prn_keys)
+        self.weights = weights
 
         # Summaries
         tf.compat.v1.summary.scalar('loss', opt_loss)

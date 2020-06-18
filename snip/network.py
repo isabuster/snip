@@ -77,13 +77,13 @@ class LeNet300(object):
             'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         weights = {}
-        with tf.variable_scope(scope):
-            weights['w1'] = tf.get_variable('w1', [784, 300], **w_params)
-            weights['w2'] = tf.get_variable('w2', [300, 100], **w_params)
-            weights['w3'] = tf.get_variable('w3', [100, 10], **w_params)
-            weights['b1'] = tf.get_variable('b1', [300], **b_params)
-            weights['b2'] = tf.get_variable('b2', [100], **b_params)
-            weights['b3'] = tf.get_variable('b3', [10], **b_params)
+        with tf.compat.v1.variable_scope(scope):
+            weights['w1'] = tf.compat.v1.get_variable('w1', [784, 300], **w_params)
+            weights['w2'] = tf.compat.v1.get_variable('w2', [300, 100], **w_params)
+            weights['w3'] = tf.compat.v1.get_variable('w3', [100, 10], **w_params)
+            weights['b1'] = tf.compat.v1.get_variable('b1', [300], **b_params)
+            weights['b2'] = tf.compat.v1.get_variable('b2', [100], **b_params)
+            weights['b3'] = tf.compat.v1.get_variable('b3', [10], **b_params)
         return weights
 
     def forward_pass(self, weights, inputs, is_train, trainable=True):
@@ -205,23 +205,23 @@ class AlexNet(object):
         }
         k = self.k
         weights = {}
-        with tf.variable_scope(scope):
-            weights['w1'] = tf.get_variable('w1', [11, 11, 3, 96], **w_params)
-            weights['w2'] = tf.get_variable('w2', [5, 5, 96, 256], **w_params)
-            weights['w3'] = tf.get_variable('w3', [3, 3, 256, 384], **w_params)
-            weights['w4'] = tf.get_variable('w4', [3, 3, 384, 384], **w_params)
-            weights['w5'] = tf.get_variable('w5', [3, 3, 384, 256], **w_params)
-            weights['w6'] = tf.get_variable('w6', [256, 1024*k], **w_params)
-            weights['w7'] = tf.get_variable('w7', [1024*k, 1024*k], **w_params)
-            weights['w8'] = tf.get_variable('w8', [1024*k, self.num_classes], **w_params)
-            weights['b1'] = tf.get_variable('b1', [96], **b_params)
-            weights['b2'] = tf.get_variable('b2', [256], **b_params)
-            weights['b3'] = tf.get_variable('b3', [384], **b_params)
-            weights['b4'] = tf.get_variable('b4', [384], **b_params)
-            weights['b5'] = tf.get_variable('b5', [256], **b_params)
-            weights['b6'] = tf.get_variable('b6', [1024*k], **b_params)
-            weights['b7'] = tf.get_variable('b7', [1024*k], **b_params)
-            weights['b8'] = tf.get_variable('b8', [self.num_classes], **b_params)
+        with tf.compat.v1.variable_scope(scope):
+            weights['w1'] = tf.compat.v1.get_variable('w1', [11, 11, 3, 96], **w_params)
+            weights['w2'] = tf.compat.v1.get_variable('w2', [5, 5, 96, 256], **w_params)
+            weights['w3'] = tf.compat.v1.get_variable('w3', [3, 3, 256, 384], **w_params)
+            weights['w4'] = tf.compat.v1.get_variable('w4', [3, 3, 384, 384], **w_params)
+            weights['w5'] = tf.compat.v1.get_variable('w5', [3, 3, 384, 256], **w_params)
+            weights['w6'] = tf.compat.v1.get_variable('w6', [256, 1024*k], **w_params)
+            weights['w7'] = tf.compat.v1.get_variable('w7', [1024*k, 1024*k], **w_params)
+            weights['w8'] = tf.compat.v1.get_variable('w8', [1024*k, self.num_classes], **w_params)
+            weights['b1'] = tf.compat.v1.get_variable('b1', [96], **b_params)
+            weights['b2'] = tf.compat.v1.get_variable('b2', [256], **b_params)
+            weights['b3'] = tf.compat.v1.get_variable('b3', [384], **b_params)
+            weights['b4'] = tf.compat.v1.get_variable('b4', [384], **b_params)
+            weights['b5'] = tf.compat.v1.get_variable('b5', [256], **b_params)
+            weights['b6'] = tf.compat.v1.get_variable('b6', [1024*k], **b_params)
+            weights['b7'] = tf.compat.v1.get_variable('b7', [1024*k], **b_params)
+            weights['b8'] = tf.compat.v1.get_variable('b8', [self.num_classes], **b_params)
         return weights
 
     def forward_pass(self, weights, inputs, is_train, trainable=True):
@@ -231,26 +231,26 @@ class AlexNet(object):
         }
         init_st = 4 if self.datasource == 'tiny-imagenet' else 2
         inputs = tf.nn.conv2d(inputs, weights['w1'], [1,init_st,init_st,1], 'SAME') + weights['b1']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         inputs = tf.nn.conv2d(inputs, weights['w2'], [1, 2, 2, 1], 'SAME') + weights['b2']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         inputs = tf.nn.conv2d(inputs, weights['w3'], [1, 2, 2, 1], 'SAME') + weights['b3']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         inputs = tf.nn.conv2d(inputs, weights['w4'], [1, 2, 2, 1], 'SAME') + weights['b4']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         inputs = tf.nn.conv2d(inputs, weights['w5'], [1, 2, 2, 1], 'SAME') + weights['b5']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         inputs = tf.reshape(inputs, [-1, reduce(lambda x, y: x*y, inputs.shape.as_list()[1:])])
         inputs = tf.matmul(inputs, weights['w6']) + weights['b6']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         inputs = tf.matmul(inputs, weights['w7']) + weights['b7']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         inputs = tf.matmul(inputs, weights['w8']) + weights['b8'] # logits
         return inputs
@@ -325,69 +325,69 @@ class VGG(object):
             'collections': [self.name, tf.compat.v1.GraphKeys.GLOBAL_VARIABLES],
         }
         weights = {}
-        with tf.variable_scope(scope):
-            weights['w1'] = tf.get_variable('w1', [3, 3, 3, 64], **w_params)
-            weights['w2'] = tf.get_variable('w2', [3, 3, 64, 64], **w_params)
-            weights['w3'] = tf.get_variable('w3', [3, 3, 64, 128], **w_params)
-            weights['w4'] = tf.get_variable('w4', [3, 3, 128, 128], **w_params)
-            weights['b1'] = tf.get_variable('b1', [64], **b_params)
-            weights['b2'] = tf.get_variable('b2', [64], **b_params)
-            weights['b3'] = tf.get_variable('b3', [128], **b_params)
-            weights['b4'] = tf.get_variable('b4', [128], **b_params)
+        with tf.compat.v1.variable_scope(scope):
+            weights['w1'] = tf.compat.v1.get_variable('w1', [3, 3, 3, 64], **w_params)
+            weights['w2'] = tf.compat.v1.get_variable('w2', [3, 3, 64, 64], **w_params)
+            weights['w3'] = tf.compat.v1.get_variable('w3', [3, 3, 64, 128], **w_params)
+            weights['w4'] = tf.compat.v1.get_variable('w4', [3, 3, 128, 128], **w_params)
+            weights['b1'] = tf.compat.v1.get_variable('b1', [64], **b_params)
+            weights['b2'] = tf.compat.v1.get_variable('b2', [64], **b_params)
+            weights['b3'] = tf.compat.v1.get_variable('b3', [128], **b_params)
+            weights['b4'] = tf.compat.v1.get_variable('b4', [128], **b_params)
             if self.version == 'C':
-                weights['w5'] = tf.get_variable('w5', [3, 3, 128, 256], **w_params)
-                weights['w6'] = tf.get_variable('w6', [3, 3, 256, 256], **w_params)
-                weights['w7'] = tf.get_variable('w7', [1, 1, 256, 256], **w_params)
-                weights['w8'] = tf.get_variable('w8', [3, 3, 256, 512], **w_params)
-                weights['w9'] = tf.get_variable('w9', [3, 3, 512, 512], **w_params)
-                weights['w10'] = tf.get_variable('w10', [1, 1, 512, 512], **w_params)
-                weights['w11'] = tf.get_variable('w11', [3, 3, 512, 512], **w_params)
-                weights['w12'] = tf.get_variable('w12', [3, 3, 512, 512], **w_params)
-                weights['w13'] = tf.get_variable('w13', [1, 1, 512, 512], **w_params)
-                weights['b5'] = tf.get_variable('b5', [256], **b_params)
-                weights['b6'] = tf.get_variable('b6', [256], **b_params)
-                weights['b7'] = tf.get_variable('b7', [256], **b_params)
-                weights['b8'] = tf.get_variable('b8', [512], **b_params)
-                weights['b9'] = tf.get_variable('b9', [512], **b_params)
-                weights['b10'] = tf.get_variable('b10', [512], **b_params)
-                weights['b11'] = tf.get_variable('b11', [512], **b_params)
-                weights['b12'] = tf.get_variable('b12', [512], **b_params)
-                weights['b13'] = tf.get_variable('b13', [512], **b_params)
+                weights['w5'] = tf.compat.v1.get_variable('w5', [3, 3, 128, 256], **w_params)
+                weights['w6'] = tf.compat.v1.get_variable('w6', [3, 3, 256, 256], **w_params)
+                weights['w7'] = tf.compat.v1.get_variable('w7', [1, 1, 256, 256], **w_params)
+                weights['w8'] = tf.compat.v1.get_variable('w8', [3, 3, 256, 512], **w_params)
+                weights['w9'] = tf.compat.v1.get_variable('w9', [3, 3, 512, 512], **w_params)
+                weights['w10'] = tf.compat.v1.get_variable('w10', [1, 1, 512, 512], **w_params)
+                weights['w11'] = tf.compat.v1.get_variable('w11', [3, 3, 512, 512], **w_params)
+                weights['w12'] = tf.compat.v1.get_variable('w12', [3, 3, 512, 512], **w_params)
+                weights['w13'] = tf.compat.v1.get_variable('w13', [1, 1, 512, 512], **w_params)
+                weights['b5'] = tf.compat.v1.get_variable('b5', [256], **b_params)
+                weights['b6'] = tf.compat.v1.get_variable('b6', [256], **b_params)
+                weights['b7'] = tf.compat.v1.get_variable('b7', [256], **b_params)
+                weights['b8'] = tf.compat.v1.get_variable('b8', [512], **b_params)
+                weights['b9'] = tf.compat.v1.get_variable('b9', [512], **b_params)
+                weights['b10'] = tf.compat.v1.get_variable('b10', [512], **b_params)
+                weights['b11'] = tf.compat.v1.get_variable('b11', [512], **b_params)
+                weights['b12'] = tf.compat.v1.get_variable('b12', [512], **b_params)
+                weights['b13'] = tf.compat.v1.get_variable('b13', [512], **b_params)
             elif self.version == 'D' or self.version == 'like':
-                weights['w5'] = tf.get_variable('w5', [3, 3, 128, 256], **w_params)
-                weights['w6'] = tf.get_variable('w6', [3, 3, 256, 256], **w_params)
-                weights['w7'] = tf.get_variable('w7', [3, 3, 256, 256], **w_params)
-                weights['w8'] = tf.get_variable('w8', [3, 3, 256, 512], **w_params)
-                weights['w9'] = tf.get_variable('w9', [3, 3, 512, 512], **w_params)
-                weights['w10'] = tf.get_variable('w10', [3, 3, 512, 512], **w_params)
-                weights['w11'] = tf.get_variable('w11', [3, 3, 512, 512], **w_params)
-                weights['w12'] = tf.get_variable('w12', [3, 3, 512, 512], **w_params)
-                weights['w13'] = tf.get_variable('w13', [3, 3, 512, 512], **w_params)
-                weights['b5'] = tf.get_variable('b5', [256], **b_params)
-                weights['b6'] = tf.get_variable('b6', [256], **b_params)
-                weights['b7'] = tf.get_variable('b7', [256], **b_params)
-                weights['b8'] = tf.get_variable('b8', [512], **b_params)
-                weights['b9'] = tf.get_variable('b9', [512], **b_params)
-                weights['b10'] = tf.get_variable('b10', [512], **b_params)
-                weights['b11'] = tf.get_variable('b11', [512], **b_params)
-                weights['b12'] = tf.get_variable('b12', [512], **b_params)
-                weights['b13'] = tf.get_variable('b13', [512], **b_params)
-            weights['w14'] = tf.get_variable('w14', [512, 512], **w_params)
-            weights['b14'] = tf.get_variable('b14', [512], **b_params)
+                weights['w5'] = tf.compat.v1.get_variable('w5', [3, 3, 128, 256], **w_params)
+                weights['w6'] = tf.compat.v1.get_variable('w6', [3, 3, 256, 256], **w_params)
+                weights['w7'] = tf.compat.v1.get_variable('w7', [3, 3, 256, 256], **w_params)
+                weights['w8'] = tf.compat.v1.get_variable('w8', [3, 3, 256, 512], **w_params)
+                weights['w9'] = tf.compat.v1.get_variable('w9', [3, 3, 512, 512], **w_params)
+                weights['w10'] = tf.compat.v1.get_variable('w10', [3, 3, 512, 512], **w_params)
+                weights['w11'] = tf.compat.v1.get_variable('w11', [3, 3, 512, 512], **w_params)
+                weights['w12'] = tf.compat.v1.get_variable('w12', [3, 3, 512, 512], **w_params)
+                weights['w13'] = tf.compat.v1.get_variable('w13', [3, 3, 512, 512], **w_params)
+                weights['b5'] = tf.compat.v1.get_variable('b5', [256], **b_params)
+                weights['b6'] = tf.compat.v1.get_variable('b6', [256], **b_params)
+                weights['b7'] = tf.compat.v1.get_variable('b7', [256], **b_params)
+                weights['b8'] = tf.compat.v1.get_variable('b8', [512], **b_params)
+                weights['b9'] = tf.compat.v1.get_variable('b9', [512], **b_params)
+                weights['b10'] = tf.compat.v1.get_variable('b10', [512], **b_params)
+                weights['b11'] = tf.compat.v1.get_variable('b11', [512], **b_params)
+                weights['b12'] = tf.compat.v1.get_variable('b12', [512], **b_params)
+                weights['b13'] = tf.compat.v1.get_variable('b13', [512], **b_params)
+            weights['w14'] = tf.compat.v1.get_variable('w14', [512, 512], **w_params)
+            weights['b14'] = tf.compat.v1.get_variable('b14', [512], **b_params)
             if not self.version == 'like':
-                weights['w15'] = tf.get_variable('w15', [512, 512], **w_params)
-                weights['w16'] = tf.get_variable('w16', [512, self.num_classes], **w_params)
-                weights['b15'] = tf.get_variable('b15', [512], **b_params)
-                weights['b16'] = tf.get_variable('b16', [self.num_classes], **b_params)
+                weights['w15'] = tf.compat.v1.get_variable('w15', [512, 512], **w_params)
+                weights['w16'] = tf.compat.v1.get_variable('w16', [512, self.num_classes], **w_params)
+                weights['b15'] = tf.compat.v1.get_variable('b15', [512], **b_params)
+                weights['b16'] = tf.compat.v1.get_variable('b16', [self.num_classes], **b_params)
             else:
-                weights['w15'] = tf.get_variable('w15', [512, self.num_classes], **w_params)
-                weights['b15'] = tf.get_variable('b15', [self.num_classes], **b_params)
+                weights['w15'] = tf.compat.v1.get_variable('w15', [512, self.num_classes], **w_params)
+                weights['b15'] = tf.compat.v1.get_variable('b15', [self.num_classes], **b_params)
         return weights
 
     def forward_pass(self, weights, inputs, is_train, trainable=True):
         def _conv_block(inputs, bn_params, filt, st=1):
             inputs = tf.nn.conv2d(inputs, filt['w'], [1, st, st, 1], 'SAME') + filt['b']
-            inputs = tf.layers.batch_normalization(inputs, **bn_params)
+            inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
             inputs = tf.nn.relu(inputs)
             return inputs
 
@@ -420,11 +420,11 @@ class VGG(object):
 
         inputs = tf.reshape(inputs, [-1, reduce(lambda x, y: x*y, inputs.shape.as_list()[1:])])
         inputs = tf.matmul(inputs, weights['w14']) + weights['b14']
-        inputs = tf.layers.batch_normalization(inputs, **bn_params)
+        inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
         inputs = tf.nn.relu(inputs)
         if not self.version == 'like':
             inputs = tf.matmul(inputs, weights['w15']) + weights['b15']
-            inputs = tf.layers.batch_normalization(inputs, **bn_params)
+            inputs = tf.compat.v1.layers.batch_normalization(inputs, **bn_params)
             inputs = tf.nn.relu(inputs)
             inputs = tf.matmul(inputs, weights['w16']) + weights['b16']
         else:

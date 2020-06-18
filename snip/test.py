@@ -60,7 +60,7 @@ def _evaluate(model, saver, model_file, sess, dataset, batch_size):
                 batch[key] = np.stack(batch[key])
             feed_dict = {}
             feed_dict.update({model.inputs[key]: batch[key] for key in keys})
-            feed_dict.update({model.compress: False, model.is_train: False, model.pruned: True})
+            feed_dict.update({model.compress: False, model.new_compress: False, model.is_train: True, model.pruned: True})
             result = sess.run([model.outputs], feed_dict)
             accuracy.extend(result[0]['acc_individual'])
 

@@ -22,7 +22,7 @@ def train(args, model, sess, dataset):
         batch = augment(batch, args.aug_kinds, random_state)
         feed_dict = {}
         feed_dict.update({model.inputs[key]: batch[key] for key in ['input', 'label']})
-        feed_dict.update({model.compress: False, model.is_train: True, model.pruned: True})
+        feed_dict.update({model.compress: False, model.new_compress: False, model.is_train: True, model.pruned: True})
         input_tensors = [model.outputs] # always execute the graph outputs
         if (itr+1) % args.check_interval == 0:
             input_tensors.extend([model.summ_op, model.sparsity])
@@ -35,7 +35,7 @@ def train(args, model, sess, dataset):
             batch = augment(batch, args.aug_kinds, random_state)
             feed_dict = {}
             feed_dict.update({model.inputs[key]: batch[key] for key in ['input', 'label']})
-            feed_dict.update({model.compress: False, model.is_train: False, model.pruned: True})
+            feed_dict.update({model.compress: False, model.new_compress: False, model.is_train: False, model.pruned: True})
             input_tensors = [model.outputs, model.summ_op, model.sparsity]
             result_val = sess.run(input_tensors, feed_dict)
 
