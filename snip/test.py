@@ -1,4 +1,5 @@
 import os
+import shutil
 import tensorflow as tf
 import numpy as np
 
@@ -30,6 +31,7 @@ def test(args, model, sess, dataset):
         acc.append(result['accuracy'])
     print('Max: {:.5f}, Min: {:.5f} (#Eval: {})'.format(max(acc), min(acc), len(acc)))
     print('Error: {:.3f} %'.format((1 - max(acc))*100))
+    shutil.rmtree(os.path.join(args.path_assess, dataset.datasource))
 
 def _evaluate(model, saver, model_file, sess, dataset, batch_size):
     # load model
