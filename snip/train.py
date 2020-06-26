@@ -6,7 +6,7 @@ import numpy as np
 from augment import augment
 
 
-def train(args, model, sess, dataset):
+def train(args, model, sess, dataset, lr, rewinding_itr=10000):
     print('|========= START TRAINING =========|')
     if not os.path.isdir(args.path_summary): os.makedirs(args.path_summary)
     if not os.path.isdir(args.path_model): os.makedirs(args.path_model)
@@ -23,10 +23,11 @@ def train(args, model, sess, dataset):
         feed_dict = {}
         feed_dict.update({model.inputs[key]: batch[key] for key in ['input', 'label']})
         feed_dict.update({model.compress: False, model.new_compress: False, model.is_train: True, model.pruned: True})
+        feed_dict.update({model.lr: lr})
         input_tensors = [model.outputs] # always execute the graph outputs
         if (itr+1) % args.check_interval == 0:
             input_tensors.extend([model.summ_op, model.sparsity])
-        input_tensors.extend([model.train_op])
+        input_tensors.extend([model.train_op, model.w_final])
         result = sess.run(input_tensors, feed_dict)
 
         # Check on validation set.
@@ -54,3 +55,9 @@ def train(args, model, sess, dataset):
         # Save model
         if (itr+1) % args.save_interval == 0:
             saver.save(sess, args.path_model + '/itr-' + str(itr))
+
+        # Save weights for rewinding
+        if (itr+1) == rewinding_itr:
+            rewinding_weights = result[-1]
+
+    return rewinding_weights

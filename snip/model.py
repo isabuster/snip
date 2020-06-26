@@ -26,7 +26,7 @@ class Model(object):
         self.target_sparsity = target_sparsity
         self.optimizer = optimizer
         self.lr_decay_type = lr_decay_type
-        self.lr = lr
+        self.lr = tf.compat.v1.placeholder_with_default(lr, [])
         self.decay_boundaries = decay_boundaries
         self.decay_values = decay_values
         self.initializer_w_bp = initializer_w_bp
@@ -50,6 +50,8 @@ class Model(object):
         self.pruned = tf.compat.v1.placeholder_with_default(False, [])
         # Compress based on the magnitude of weights for each layer
         self.new_compress = tf.compat.v1.placeholder_with_default(False, [])
+        # Whether to rewind weights
+        self.rewind = tf.compat.v1.placeholder_with_default(False, [])
 
         # Switch for n to use (before or after pruning)
         weights = tf.cond(self.pruned, lambda: net.weights_ap, lambda: net.weights_bp)
@@ -74,8 +76,8 @@ class Model(object):
             cs = normalize_dict({k: tf.abs(v) for k, v in gradients.items()})
             return create_sparse_mask(cs, self.target_sparsity)
 
-        mask = tf.cond(self.compress, lambda: get_sparse_mask(), lambda: mask_prev)
-        self.sparsity_fraction = {k: tf.nn.zero_fraction(v) for k,v in mask.items()}
+        mask1 = tf.cond(self.compress, lambda: get_sparse_mask(), lambda: mask_prev)
+        self.sparsity_fraction = {k: tf.nn.zero_fraction(v) for k,v in mask1.items()}
 
         def get_new_sparse_mask():
             def create_new_sparse_mask(weights, kappa):
@@ -89,11 +91,11 @@ class Model(object):
                 return mask_sparse
             return create_new_sparse_mask(weights, self.kappa)
 
-        mask = tf.cond(self.new_compress, lambda: get_new_sparse_mask(), lambda: mask_prev)
+        mask2 = tf.cond(self.new_compress, lambda: get_new_sparse_mask(), lambda: mask_prev)
 
-        with tf.control_dependencies([tf.compat.v1.assign(mask_prev[k], v) for k,v in mask.items()]):
-            self.mask = mask
-            w_final = apply_mask(weights, mask)
+        with tf.control_dependencies([tf.compat.v1.assign(mask_prev[k], v) for k,v in mask2.items()]):
+            self.mask = mask2
+            w_final = apply_mask(weights, mask2)
 
         self.w_final = w_final
         # Forward pass
@@ -150,7 +152,7 @@ def get_optimizer(optimizer, lr):
 def prepare_optimization(loss, optimizer, lr_decay_type, learning_rate, boundaries, values):
     global_step = tf.Variable(0, trainable=False)
     if lr_decay_type == 'constant':
-        learning_rate = tf.constant(learning_rate)
+        learning_rate = learning_rate
     elif lr_decay_type == 'piecewise':
         assert len(boundaries)+1 == len(values)
         learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)

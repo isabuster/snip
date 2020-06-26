@@ -25,3 +25,9 @@ def prune_magnitude(args, model, sess, dataset, kappa):
     feed_dict.update({model.compress: False, model.new_compress: True, model.is_train: True, model.pruned: True})
     result = sess.run([model.outputs, model.sparsity, model.w_final], feed_dict)
     print('Pruning: {:.3f} global sparsity (t:{:.1f})'.format(result[1], time.time() - t_start))
+
+def rewind(args, model, sess, dataset, rewinding_weights, rewinding_itr=4000):
+    print('Rewinding weights to itr-{}'.format(rewinding_itr))
+    for k in rewinding_weights:
+        assign_op = model.net.weights_ap[k].assign(rewinding_weights[k])
+        sess.run(assign_op)

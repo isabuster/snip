@@ -100,15 +100,18 @@ def main():
     kappa = {k: int(round(num_weights[k] * (1. - sparsity_fraction[k]))) for k in num_weights}
 
     # Train and test the dense network
-    train.train(args, model, sess, dataset)
+    rewinding_weights = train.train(args, model, sess, dataset, lr=args.lr, rewinding_itr=4000)
     print('|========= FINISH TRAINING DENSE NETWORK =========|')
     test.test(args, model, sess, dataset)
 
     # Prune each layer based on the magnitude of the weights according to sparsity per layer
     prune.prune_magnitude(args, model, sess, dataset, kappa)
 
+    # Rewind
+    prune.rewind(args, model, sess, dataset, rewinding_weights)
+
     # Train and test with the sparse network
-    train.train(args, model, sess, dataset)
+    train.train(args, model, sess, dataset, lr=1e-1)
     print('|========= FINISH TRAINING SPARSE NETWORK =========|')
     test.test(args, model, sess, dataset)
 

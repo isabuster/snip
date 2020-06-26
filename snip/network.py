@@ -53,7 +53,7 @@ class LeNet300(object):
         self.input_dims = [28, 28, 1] # height, width, channel
         self.inputs = self.construct_inputs()
         self.weights_bp = self.construct_weights(initializer_w_bp, initializer_b_bp, False, 'bp')
-        self.weights_ap = self.construct_weights(initializer_w_ap, initializer_b_ap, True, 'ap')
+        self.weights_ap = {k: tf.Variable(self.weights_bp[k].initialized_value(), trainable=True, name='ap/'+k) for k in self.weights_bp}
         self.num_params = sum([static_size(v) for v in self.weights_ap.values()])
 
     def construct_inputs(self):
@@ -107,7 +107,7 @@ class LeNet5(object):
         self.input_dims = [28, 28, 1] # height, width, channel
         self.inputs = self.construct_inputs()
         self.weights_bp = self.construct_weights(initializer_w_bp, initializer_b_bp, False, 'bp')
-        self.weights_ap = self.construct_weights(initializer_w_ap, initializer_b_ap, True, 'ap')
+        self.weights_ap = {k: tf.Variable(self.weights_bp[k].initialized_value(), trainable=True, name='ap/'+k) for k in self.weights_bp}
         self.num_params = sum([static_size(v) for v in self.weights_ap.values()])
 
     def construct_inputs(self):
@@ -180,7 +180,7 @@ class AlexNet(object):
         self.input_dims = [64, 64, 3] if self.datasource == 'tiny-imagenet' else [32, 32, 3] # h,w,c
         self.inputs = self.construct_inputs()
         self.weights_bp = self.construct_weights(initializer_w_bp, initializer_b_bp, False, 'bp')
-        self.weights_ap = self.construct_weights(initializer_w_ap, initializer_b_ap, True, 'ap')
+        self.weights_ap = {k: tf.Variable(self.weights_bp[k].initialized_value(), trainable=True, name='ap/'+k) for k in self.weights_bp}
         self.num_params = sum([static_size(v) for v in self.weights_ap.values()])
 
     def construct_inputs(self):
@@ -301,7 +301,7 @@ class VGG(object):
         self.input_dims = [64, 64, 3] if self.datasource == 'tiny-imagenet' else [32, 32, 3] # h,w,c
         self.inputs = self.construct_inputs()
         self.weights_bp = self.construct_weights(initializer_w_bp, initializer_b_bp, False, 'bp')
-        self.weights_ap = self.construct_weights(initializer_w_ap, initializer_b_ap, True, 'ap')
+        self.weights_ap = {k: tf.Variable(self.weights_bp[k].initialized_value(), trainable=True, name='ap/'+k) for k in self.weights_bp}
         self.num_params = sum([static_size(v) for v in self.weights_ap.values()])
 
     def construct_inputs(self):
