@@ -77,7 +77,7 @@ class Model(object):
             return create_sparse_mask(cs, self.target_sparsity)
 
         mask1 = tf.cond(self.compress, lambda: get_sparse_mask(), lambda: mask_prev)
-        self.sparsity_fraction = {k: tf.nn.zero_fraction(v) for k,v in mask1.items()}
+        self.nonzero_elements = {k: tf.math.count_nonzero(v) for k,v in mask1.items()}
 
         def get_new_sparse_mask():
             def create_new_sparse_mask(weights, kappa):
@@ -155,7 +155,7 @@ def prepare_optimization(loss, optimizer, lr_decay_type, learning_rate, boundari
         learning_rate = learning_rate
     elif lr_decay_type == 'piecewise':
         assert len(boundaries)+1 == len(values)
-        learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
+        learning_rate = tf.compat.v1.train.piecewise_constant(global_step, boundaries, values)
     else:
         raise NotImplementedError
     optim = get_optimizer(optimizer, learning_rate)

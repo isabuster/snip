@@ -1,4 +1,4 @@
-# SNIP
+# Double-shot Network Pruning
 This repository contains code modified from the paper [SNIP: Single-shot Network Pruning based on Connection Sensitivity (ICLR 2019)](https://arxiv.org/abs/1810.02340).
 Original repository is here: https://github.com/namhoonlee/snip-public.
 
@@ -6,6 +6,7 @@ Original repository is here: https://github.com/namhoonlee/snip-public.
 
 ### Dependencies
 * tensorflow 2.2
+* pytorch 1.4.0
 * python 3.7
 * packages in `requirements.txt`
 

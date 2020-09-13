@@ -6,7 +6,7 @@ import numpy as np
 from augment import augment
 
 
-def train(args, model, sess, dataset, lr, rewinding_itr=10000):
+def train(args, model, sess, dataset, lr, rewinding_itr1=10000, rewinding_itr2=10000):
     print('|========= START TRAINING =========|')
     if not os.path.isdir(args.path_summary): os.makedirs(args.path_summary)
     if not os.path.isdir(args.path_model): os.makedirs(args.path_model)
@@ -57,7 +57,9 @@ def train(args, model, sess, dataset, lr, rewinding_itr=10000):
             saver.save(sess, args.path_model + '/itr-' + str(itr))
 
         # Save weights for rewinding
-        if (itr+1) == rewinding_itr:
-            rewinding_weights = result[-1]
+        if (itr+1) == rewinding_itr1:
+            rewinding_weights1 = result[-1]
+        if (itr+1) == rewinding_itr2:
+            rewinding_weights2 = result[-1]
 
-    return rewinding_weights
+    return rewinding_weights1, rewinding_weights2
